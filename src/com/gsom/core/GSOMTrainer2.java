@@ -9,47 +9,22 @@ import com.gsom.objects.GNode;
 import com.gsom.util.ArrayHelper;
 import com.gsom.util.GSOMConstants;
 import com.gsom.util.Utils;
-import java.util.LinkedHashMap;
 
-public class GSOMTrainer {
+public class GSOMTrainer2 {
 
     private Map<String, GNode> nodeMap;
-    private NodeGrowthHandler growthHandler;
     private InitType initType;
 
-    public GSOMTrainer(InitType initType) {
-        this.initType = initType;
-        nodeMap = new LinkedHashMap<String, GNode>();
+    public GSOMTrainer2(InitType initType) {
+
     }
 
     public Map<String, GNode> trainNetwork(ArrayList<String> iStrings, ArrayList<double[]> iWeights) {
-        initFourNodes(initType);	//init the map with four nodes
-        for (int i = 0; i < GSOMConstants.MAX_ITERATIONS; i++) {
-            int k = 0;
-            double learningRate = Utils.getLearningRate(i, nodeMap.size());
-            double radius = Utils.getRadius(i, Utils.getTimeConst());
-            for (double[] input : iWeights) {
-                trainForSingleIterAndSingleInput(i, input, iStrings.get(k), learningRate, radius);
-                k++;
-            }
-        }
-        return nodeMap;
+        return null;
     }
 
     private void trainForSingleIterAndSingleInput(int iter, double[] input, String str, double learningRate, double radius) {
 
-        GNode winner = Utils.selectWinner(nodeMap, input);
-
-        for (String key : nodeMap.keySet()) {
-            Utils.adjustNeighbourWeight(nodeMap.get(key), winner, input, radius, learningRate);
-        }
-
-        winner.calcAndUpdateErr(input);
-
-        if (winner.getErrorValue() > GSOMConstants.getGT()) {
-            //System.out.println("Winner "+winner.getX()+","+winner.getY()+" GT exceeded");
-            adjustWinnerError(winner);
-        }
     }
 
     //Initialization of the map. 
@@ -77,65 +52,20 @@ public class GSOMTrainer {
     //when a neuron wins its error value needs to be adjusted
     private void adjustWinnerError(GNode winner) {
 
-        //on x-axis
-        String nodeLeftStr = Utils.generateIndexString(winner.getX() - 1, winner.getY());
-        String nodeRightStr = Utils.generateIndexString(winner.getX() + 1, winner.getY());
-
-        //on y-axis
-        String nodeTopStr = Utils.generateIndexString(winner.getX(), winner.getY() + 1);
-        String nodeBottomStr = Utils.generateIndexString(winner.getX(), winner.getY());
-
-        if (nodeMap.containsKey(nodeLeftStr)
-                && nodeMap.containsKey(nodeRightStr)
-                && nodeMap.containsKey(nodeTopStr)
-                && nodeMap.containsKey(nodeBottomStr)) {
-            distrErrToNeighbors(winner, nodeLeftStr, nodeRightStr, nodeTopStr, nodeBottomStr);
-        } else {
-            growNodes(winner); //NodeGrowthHandler takes over
-        }
     }
 
     //distributing error to the neighbors of thw winning node
     private void distrErrToNeighbors(GNode winner, String leftK, String rightK, String topK, String bottomK) {
-        winner.setErrorValue(GSOMConstants.getGT() / 2);
 
-        nodeMap.get(leftK).setErrorValue(calcErrForNeighbour(nodeMap.get(leftK)));
-        nodeMap.get(rightK).setErrorValue(calcErrForNeighbour(nodeMap.get(rightK)));
-        nodeMap.get(topK).setErrorValue(calcErrForNeighbour(nodeMap.get(topK)));
-        nodeMap.get(bottomK).setErrorValue(calcErrForNeighbour(nodeMap.get(bottomK)));
     }
 
     //error calculating equation for neighbours of a winner
     private double calcErrForNeighbour(GNode node) {
-        return node.getErrorValue() + (GSOMConstants.FD * node.getErrorValue());
+        return 0.0;
     }
 
     public void growNodes(GNode winner) {
 
-        int X = winner.getX();
-        int Y = winner.getY();
-
-        for (int i = X - 1; i <= X + 1; i = i + 2) {
-            String nodeStr = Utils.generateIndexString(i, Y);
-            if (!nodeMap.containsKey(nodeStr)) {
-                
-                //grow new node
-                GNode newNode = new GNode(i, Y, getNewNodeWeights(winner, i, Y));
-                //System.out.println("Node "+X+","+Y+" grown from Node "+i+","+Y);
-                nodeMap.put(Utils.generateIndexString(i, Y), newNode);
-            }
-        }
-        for (int i = Y - 1; i <= Y + 1; i = i + 2) {
-            String nodeStr = Utils.generateIndexString(X, i);
-                
-            if (!nodeMap.containsKey(nodeStr)) {
-                //grow new node
-                GNode newNode = new GNode(X, i, getNewNodeWeights(winner, X, i));
-                //System.out.println("Node "+X+","+Y+" grown from Node "+X+","+i);
-                nodeMap.put(Utils.generateIndexString(X, i), newNode);
-            }
-        }
-        return;
     }
 
     //calc and get weights for the new node

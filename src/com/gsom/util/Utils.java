@@ -79,16 +79,18 @@ public class Utils {
     }
 
     //---TESTED INline with the C# code---
-    public static GNode adjustNeighbourWeight(GNode node, GNode winner, double[] input, double radius, double learningRate) {
+    public static void adjustNeighbourWeight(GNode node, GNode winner, double[] input, double radius, double learningRate) {
         double nodeDistSqr = (winner.getX() - node.getX())*(winner.getX() - node.getX()) 
                 + (winner.getY() - node.getY())*(winner.getY() - node.getY());
         double radiusSqr = radius*radius;
         //if node is within the radius
         if (nodeDistSqr < radiusSqr) {
-            double influence = Math.exp(-(double)nodeDistSqr / (2 * radiusSqr));
+            if(Utils.generateIndexString(node.getX(), node.getY()).equals("1,2")){
+                double rere = 0;
+            }
+            double influence = Math.exp(-(double)nodeDistSqr / (2.0 * radiusSqr));
             node.adjustWeights(input, influence, learningRate);
         }
-        return node;
     }
 
     public static double getRadius(int iter, double timeConst) {

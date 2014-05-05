@@ -51,7 +51,7 @@ public class NumericalDataParser extends InputParser{
 
                         GSOMConstants.DIMENSIONS = weights.get(0).length;
                         input.close();
-			super.normalizeData(weights, GSOMConstants.DIMENSIONS);
+			super.normalizeDataWithStdDev(weights, GSOMConstants.DIMENSIONS);
 			iListener.inputParseComplete(); //trigger inputParseComplete event
 
 		}

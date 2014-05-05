@@ -1,6 +1,5 @@
 package com.gsom.util.input.parsing;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,19 +24,56 @@ public abstract class InputParser {
 
     abstract public void parseInput(InputParsedListener iListener, String fileName);
 
-    protected void normalizeData(ArrayList<double[]> inputs, int dimensions) {     
-            normalizeVertical(dimensions, inputs);
-       
+    protected void normalizeData(ArrayList<double[]> inputs, int dimensions) {
+        normalizeVertical(dimensions, inputs);
+    }
+    protected void normalizeDataWithStdDev(ArrayList<double[]> inputs, int dimensions) {
+        normalizeVerticalWithStdDev(dimensions, inputs);
     }
 
-    private void normalizeHorizontal(int dimensions, ArrayList<double[]> inputs) {
-        for (double[] vec : inputs) {
-            double total = 0;
-            for (double val : vec) {
-                total += val;
+    private void normalizeVerticalWithStdDev(int dimensions, ArrayList<double[]> inputs) {
+        ArrayList<Double> stdDevArr = new ArrayList<Double>();
+        ArrayList<Double> meanArr = new ArrayList<Double>();
+
+        for (int i = 0; i < dimensions; i++) {
+            double[] dimArr = new double[inputs.size()];
+
+            double meanForDim = 0.0;
+            for (int j = 0; j < inputs.size(); j++) {
+                dimArr[j] = inputs.get(j)[i];
+                meanForDim += dimArr[j];
             }
-            for (int i = 0; i < vec.length; i++) {
-                vec[i] = vec[i] / total;
+
+            meanForDim = meanForDim / inputs.size();
+            meanArr.add(meanForDim);
+
+            double stdDev = 0.0;
+            for (int j = 0; j < inputs.size(); j++) {
+                stdDev += (inputs.get(j)[i] - meanForDim) * (inputs.get(j)[i] - meanForDim);
+            }
+            stdDev = Math.sqrt(stdDev/inputs.size());
+            stdDevArr.add(stdDev);
+
+        }
+
+        for (int i = 0; i < dimensions; i++) {
+
+            double minStd = meanArr.get(i) - (2 * stdDevArr.get(i));
+            double maxStd = meanArr.get(i) + (2 * stdDevArr.get(i));
+
+            for (int j = 0; j < inputs.size(); j++) {
+                double[] inArr = inputs.get(j);
+
+                //do this if there's some value other than 0 is in column
+                if (maxStd - minStd > 0) {
+                    inArr[i] = (inArr[i] - minStd) / (maxStd - minStd);
+                }
+                if(inArr[i]<0){
+                    inArr[i]=0;
+                }else if(inArr[i]>1){
+                    inArr[i]=1;
+                }
+                inputs.set(j, inArr);
             }
         }
     }
@@ -58,11 +94,11 @@ public abstract class InputParser {
         for (int i = 0; i < dimensions; i++) {
             for (int j = 0; j < inputs.size(); j++) {
                 double[] inArr = inputs.get(j);
-                
+
                 //do this if there's some value other than 0 is in column
-                if(maxDimArr.get(i) - minDimArr.get(i) > 0){
-                inArr[i] = (inArr[i] - minDimArr.get(i)) / (maxDimArr.get(i) - minDimArr.get(i));
-                inputs.set(j, inArr);
+                if (maxDimArr.get(i) - minDimArr.get(i) > 0) {
+                    inArr[i] = (inArr[i] - minDimArr.get(i)) / (maxDimArr.get(i) - minDimArr.get(i));
+                    inputs.set(j, inArr);
                 }
             }
         }

@@ -11,6 +11,7 @@ import com.gsom.ui.utils.ColorIcon;
 import com.gsom.util.GSOMConstants;
 import com.gsom.util.Utils;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
@@ -106,17 +107,35 @@ public class MapVisualization extends javax.swing.JFrame {
         }
     }
 
-    private ArrayList<Color> getClusterColors() {
+    private ArrayList<Color> getClusterColors(int k) {
         ArrayList<Color> colors = new ArrayList<Color>();
-        colors.add(Color.gray);
-        colors.add(Color.black);
-        colors.add(Color.blue);
-        colors.add(Color.green);
-        colors.add(Color.pink);
-        colors.add(Color.yellow);
-        colors.add(Color.orange);
-        colors.add(Color.red);
-        colors.add(Color.magenta);
+        
+        if(k<=5){
+            for(int i=0;i<k;i++){
+                Color color = Color.getHSBColor((60.0f*i)/360, 0.8f, 0.5f);
+                colors.add(color);
+            }
+        }
+        else{
+            for(int i=0;i<5;i++){
+                Color color = Color.getHSBColor((60.0f*i)/360, 0.8f, 0.5f);
+                colors.add(color);
+            }
+            for(int i=0;i<5;i++){
+                Color color = Color.getHSBColor((60.0f*i)/360, 0.8f, 0.7f);
+                colors.add(color);
+            }
+            for(int i=0;i<5;i++){
+                Color color = Color.getHSBColor((60.0f*i)/360, 0.8f, 0.35f);
+                colors.add(color);
+            }
+            for(int i=0;i<5;i++){
+                Color color = Color.getHSBColor((60.0f*i)/360, 0.8f, 0.6f);
+                colors.add(color);
+            }
+        }
+        
+        
 
         return colors;
     }
@@ -195,7 +214,7 @@ public class MapVisualization extends javax.swing.JFrame {
 
     private void displayGSOM(Map<String, GNode> map, final Map<String, String> testResults, ArrayList<GCluster> clusters, MapPlotType mType) {
 
-        ArrayList<Color> colors = getClusterColors();
+        
         Map<String, String> nodeInfo = new HashMap<String, String>();
         /*
          * Image image = null; try { image = ImageIO.read(new
@@ -254,6 +273,7 @@ public class MapVisualization extends javax.swing.JFrame {
                         nodeHits += testResults.get(loc);
 
                         if (mType == MapPlotType.CLUSTERS) {
+                            ArrayList<Color> colors = getClusterColors(clusters.size());
                             int cIdx = 0;
                             for (int i = 0; i < clusters.size(); i++) {
                                 for (int j = 0; j < clusters.get(i).getcNodes().size(); j++) {
@@ -274,6 +294,23 @@ public class MapVisualization extends javax.swing.JFrame {
                             btn.setIcon(new ColorIcon(iconWidth, iconHeight, colors.get(cIdx)));
                         }
 
+                    }else{
+                        if (mType == MapPlotType.CLUSTERS) {
+                            ArrayList<Color> colors = getClusterColors(clusters.size());
+                            int cIdx = 0;
+                            for (int i = 0; i < clusters.size(); i++) {
+                                for (int j = 0; j < clusters.get(i).getcNodes().size(); j++) {
+                                    GNode gn = clusters.get(i).getcNodes().get(j);
+                                    if (Utils.generateIndexString(gn.getX(), gn.getY()).equals(loc)) {
+                                        cIdx = i;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            //btn.setForeground(colors.get(cIdx));
+                            btn.setIcon(new ColorIcon((3*iconWidth)/4, (3*iconHeight)/4, colors.get(cIdx)));
+                        }
                     }
 
                     if (mType == MapPlotType.HEAT_MAP) {
@@ -319,7 +356,7 @@ public class MapVisualization extends javax.swing.JFrame {
             }
         }
 
-        btnPanel.setBounds(0, 0, frameHeight, frameWidth);
+        btnPanel.setBounds(0, 0, frameHeight,frameWidth);
         containerBtnPanel.add(btnPanel);
         containerBtnPanel.setMinimumSize(new Dimension(frameWidth, frameHeight));
         containerBtnPanel.setPreferredSize(new Dimension(frameWidth, frameHeight));

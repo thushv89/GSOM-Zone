@@ -11,20 +11,14 @@ import com.gsom.enums.InitType;
 import com.gsom.enums.InputDataType;
 import com.gsom.enums.MapPlotType;
 import com.gsom.listeners.GSOMRunListener;
-import com.gsom.nodes.EucDistOccMat;
 import com.gsom.objects.GCluster;
 import com.gsom.objects.GNode;
 import com.gsom.util.FileWriter;
 import com.gsom.util.GFileHandler;
 import com.gsom.util.GSOMConstants;
 import com.gsom.util.Utils;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
-import com.xeiam.xchart.*;
+
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -32,11 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -124,12 +113,7 @@ public class MainWindow extends javax.swing.JFrame implements GSOMRunListener {
         BufferedImage img = draw(chart, width, height);
 
         FileOutputStream fos = new FileOutputStream(aFileName);
-        JPEGImageEncoder encoder2 =
-                JPEGCodec.createJPEGEncoder(fos);
-        JPEGEncodeParam param2 =
-                encoder2.getDefaultJPEGEncodeParam(img);
-        param2.setQuality((float) quality, true);
-        encoder2.encode(img, param2);
+
         fos.close();
     }
 
@@ -221,6 +205,7 @@ public class MainWindow extends javax.swing.JFrame implements GSOMRunListener {
         jLabel5.setText("ITR");
 
         initTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Random", "Linear" }));
+        initTypeCombo.setSelectedIndex(1);
 
         jLabel9.setText("Initialization");
 
@@ -238,7 +223,7 @@ public class MainWindow extends javax.swing.JFrame implements GSOMRunListener {
             }
         });
 
-        jTextField4.setText("0.3");
+        jTextField4.setText("0.25");
         jTextField4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField4ActionPerformed(evt);
