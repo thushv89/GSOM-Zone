@@ -27,17 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.XYToolTipGenerator;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.util.ShapeUtilities;
 
 /**
  *
@@ -102,31 +91,6 @@ public class MainWindow extends javax.swing.JFrame implements GSOMRunListener {
 
 
         return plotColors;
-    }
-
-    public static void saveToFile(JFreeChart chart,
-            String aFileName,
-            int width,
-            int height,
-            double quality)
-            throws FileNotFoundException, IOException {
-        BufferedImage img = draw(chart, width, height);
-
-        FileOutputStream fos = new FileOutputStream(aFileName);
-
-        fos.close();
-    }
-
-    protected static BufferedImage draw(JFreeChart chart, int width, int height) {
-        BufferedImage img =
-                new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = img.createGraphics();
-
-        chart.draw(g2, new Rectangle2D.Double(0, 0, width, height));
-
-        g2.dispose();
-        return img;
     }
 
     /**
@@ -779,152 +743,6 @@ public class MainWindow extends javax.swing.JFrame implements GSOMRunListener {
         });
     }
 
-    private void createTheXYPlot(Map<String, GNode> map, final Map<String, String> testResults, ArrayList<GCluster> clusters) {
-        ArrayList<Color> plotColors = getColorArray(12);
-
-        XYToolTipGenerator tipGen = new XYToolTipGenerator() {
-
-            @Override
-            public String generateToolTip(XYDataset xyd, int i1, int i2) {
-                int dX = (int) xyd.getXValue(i1, i2);
-                int dY = (int) xyd.getYValue(i1, i2);
-                String str = testResults.get(Utils.generateIndexString(dX, dY));
-                //if(str==null){
-                //String str = "Dummy Node";
-                //}
-                return str;
-            }
-        };
-
-        XYLineAndShapeRenderer nonHitRend = new XYLineAndShapeRenderer();
-        nonHitRend.setSeriesPaint(0, new Color(0, 0, 0));
-        nonHitRend.setBaseLinesVisible(false);
-
-        ArrayList<XYSeries> seriesSet = new ArrayList<XYSeries>();
-
-
-        // identify non-hit nodes first 
-        XYSeries nonHitSeries = new XYSeries("Non-hit nodes");
-        for (GNode node : map.values()) {
-            if (!testResults.containsKey(Utils.generateIndexString(node.getX(), node.getY()))) {
-                nonHitSeries.add(node.getX(), node.getY());
-            }
-        }
-        seriesSet.add(nonHitSeries);
-
-
-        int idx = 0;
-        for (GCluster cluster : clusters) {
-            XYSeries temp = new XYSeries("cluster" + idx);
-            for (GNode node : cluster.getcNodes()) {
-                if (testResults.containsKey(Utils.generateIndexString(node.getX(), node.getY()))) {
-                    temp.add(node.getX(), node.getY());
-                }
-            }
-            seriesSet.add(temp);
-            idx++;
-        }
-
-        ArrayList<XYDataset> dataset = new ArrayList<XYDataset>();
-        for (XYSeries series : seriesSet) {
-            dataset.add(new XYSeriesCollection(series));
-        }
-
-        //XYDataset nonHitDataset = new XYSeriesCollection(nonHitSeries);
-
-        JFreeChart chart = ChartFactory.createScatterPlot("GSOM Network", "X", "Y", null, PlotOrientation.VERTICAL, false, true, false);
-
-        XYPlot plot = (XYPlot) chart.getPlot();
-
-        for (int j = 0; j < dataset.size(); j++) {
-            XYLineAndShapeRenderer rend = new XYLineAndShapeRenderer();
-            rend.setBaseToolTipGenerator(tipGen);
-            rend.setBaseLinesVisible(false);
-            if (j == 0) {
-                rend.setSeriesPaint(0, plotColors.get(j));
-            } else {
-                rend.setSeriesPaint(j, plotColors.get(2));
-            }
-            //rend.setSeriesPaint(1, plotColors.get(j));            
-            rend.setSeriesShape(0, ShapeUtilities.createDiagonalCross(3, .3f));
-            plot.setDataset(j, dataset.get(j));
-            plot.setRenderer(j, rend);
-
-
-        }
-
-
-//        ChartPanel chartpanel = new ChartPanel(chart, false, false, false, false, false);
-//        chartpanel.addMouseListener(chartpanel);
-        //plot.setDataset(1,nonHitDataset);
-        //plot.setRenderer(1,nonHitRend);
-
-        ChartFrame cFrame = new ChartFrame("GSOM Network", chart);
-        cFrame.setSize(450, 500);
-        cFrame.setVisible(true);
-
-        try {
-            saveToFile(chart, "test.jpg", 450, 500, 100);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createTheXYPlotHitAndNonHit(Map<String, GNode> map, final Map<String, String> testResults) {
-
-        XYToolTipGenerator tipGen = new XYToolTipGenerator() {
-
-            @Override
-            public String generateToolTip(XYDataset xyd, int i1, int i2) {
-                int dX = (int) xyd.getXValue(i1, i2);
-                int dY = (int) xyd.getYValue(i1, i2);
-                String str = testResults.get(Utils.generateIndexString(dX, dY));
-
-                return str;
-            }
-        };
-
-        XYLineAndShapeRenderer rend = new XYLineAndShapeRenderer();
-        rend.setSeriesPaint(0, Color.black);
-        rend.setSeriesPaint(1, Color.red);
-        rend.setBaseLinesVisible(false);
-
-        XYSeries hitSeries = new XYSeries("Hit nodes");
-        XYSeries nonHitSeries = new XYSeries("Non-hit nodes");
-
-        // identify non-hit nodes first
-        for (GNode node : map.values()) {
-            if (!testResults.containsKey(Utils.generateIndexString(node.getX(), node.getY()))) {
-                nonHitSeries.add(node.getX(), node.getY());
-            } else {
-                hitSeries.add(node.getX(), node.getY());
-            }
-        }
-
-        XYDataset hDataset = new XYSeriesCollection(hitSeries);
-        XYDataset nhDataset = new XYSeriesCollection(nonHitSeries);
-
-        JFreeChart chart = ChartFactory.createScatterPlot("GSOM Network", "X", "Y", null, PlotOrientation.HORIZONTAL, false, true, false);
-
-        XYPlot plot = (XYPlot) chart.getPlot();
-
-        rend.setSeriesShape(0, ShapeUtilities.createDiagonalCross(3, .3f));
-        plot.setDataset(0, hDataset);
-        plot.setDataset(1, nhDataset);
-        plot.setRenderer(0, rend);
-        plot.setRenderer(1, rend);
-
-        ChartFrame cFrame = new ChartFrame("GSOM Network", chart);
-        cFrame.setSize(450, 500);
-        cFrame.setVisible(true);
-
-
-        try {
-            saveToFile(chart, "e:/test1.jpg", 450, 500, 100);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField InputFileLocationTextBox;
     private javax.swing.JButton bestHitBtn;
